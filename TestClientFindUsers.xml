@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <row>
+    <id>0</id>
+    <guid>1a6fa827-62f1-45f6-b579-aaead2b47169</guid>
+    <isActive>false</isActive>
+    <balance>$2,144.93</balance>
+    <picture>http://placehold.it/32x32</picture>
+    <age>22</age>
+    <eyeColor>green</eyeColor>
+    <first_name>Boyd</first_name>
+    <last_name>Wolf</last_name>
+    <gender>male</gender>
+    <company>HOPELI</company>
+    <email>boydwolf@hopeli.com</email>
+    <phone>+1 (956) 593-2402</phone>
+    <address>586 Winthrop Street, Edneyville, Mississippi, 9555</address>
+    <about>Nulla cillum enim voluptate consequat laborum esse excepteur occaecat commodo nostrud excepteur ut cupidatat. Occaecat minim incididunt ut proident ad sint nostrud ad laborum sint pariatur. Ut nulla commodo dolore officia. Consequat anim eiusmod amet commodo eiusmod deserunt culpa. Ea sit dolore nostrud cillum proident nisi mollit est Lorem pariatur. Lorem aute officia deserunt dolor nisi aliqua consequat nulla nostrud ipsum irure id deserunt dolore. Minim reprehenderit nulla exercitation labore ipsum.
+</about>
+    <registered>2017-02-05T06:23:27 -03:00</registered>
+    <favoriteFruit>apple</favoriteFruit>
+  </row>
+  <row>
+    <id>1</id>
+    <guid>46c06b5e-dd08-4e26-bf85-b15d280e5e07</guid>
+    <isActive>false</isActive>
+    <balance>$2,705.71</balance>
+    <picture>http://placehold.it/32x32</picture>
+    <age>21</age>
+    <eyeColor>green</eyeColor>
+    <first_name>Hilda</first_name>
+    <last_name>Mayer</last_name>
+    <gender>female</gender>
+    <company>QUINTITY</company>
+    <email>hildamayer@quintity.com</email>
+    <phone>+1 (932) 421-2117</phone>
+    <address>311 Friel Place, Loyalhanna, Kansas, 6845</address>
+    <about>Sit commodo consectetur minim amet ex. Elit aute mollit fugiat labore sint ipsum dolor cupidatat qui reprehenderit. Eu nisi in exercitation culpa sint aliqua nulla nulla proident eu. Nisi reprehenderit anim cupidatat dolor incididunt laboris mollit magna commodo ex. Cupidatat sit id aliqua amet nisi et voluptate voluptate commodo ex eiusmod et nulla velit.
+</about>
+    <registered>2016-11-20T04:40:07 -03:00</registered>
+    <favoriteFruit>banana</favoriteFruit>
+  </row>
+  <row>
+    <id>2</id>
+    <guid>0601af31-061f-4249-988d-32027a545b85</guid>
+    <isActive>false</isActive>
+    <balance>$1,047.64</balance>
+    <picture>http://placehold.it/32x32</picture>
+    <age>25</age>
+    <eyeColor>blue</eyeColor>
+    <first_name>Brooks</first_name>
+    <last_name>Aguilar</last_name>
+    <gender>male</gender>
+    <company>ZILLACOM</company>
+    <email>brooksaguilar@zillacom.com</email>
+    <phone>+1 (924) 416-3150</phone>
+    <address>806 Williams Court, Vandiver, North Carolina, 9205</address>
+    <about>Velit ullamco est aliqua voluptate nisi do. Voluptate magna anim qui cillum aliqua sint veniam reprehenderit consectetur enim. Laborum dolore ut eiusmod ipsum ad anim est do tempor culpa ad do tempor. Nulla id aliqua dolore dolore adipisicing.
+</about>
+    <registered>2016-09-05T06:52:19 -03:00</registered>
+    <favoriteFruit>strawberry</favoriteFruit>
+  </row>
+
+</root>
