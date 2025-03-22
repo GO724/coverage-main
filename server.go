@@ -19,6 +19,13 @@ var DataFile string = "dataset.xml"
 // Handler
 func SearchServer(w http.ResponseWriter, r *http.Request) {
 
+	// outputUsers := make([]User, 0, 100)
+	// defer func(w http.ResponseWriter, u *[]User) {
+	// 	// Write responce
+	// 	json.NewEncoder(w).Encode(u)
+	// 	fmt.Println(w)
+	// }(w, &outputUsers)
+
 	// Check authorization
 	if r.Header.Get("AccessToken") != "valid_token" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -29,40 +36,48 @@ func SearchServer(w http.ResponseWriter, r *http.Request) {
 
 	// Параметры offset и limit позволяют получать отсортированный список юзеров
 	// пачками с индекса offset
-	offset, _ := strconv.Atoi(r.URL.Query().Get("offset")) // Pagination offset
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset")) // Pagination offset
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	// не более limit штук.
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit")) // Pagination limit
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit")) // Pagination limit
+	if err != nil || limit < 1 {
+		limit = 1
+	}
 
 	// Параметр order_field работает по полям Id, Age, Name
 	// если пустой - то возвращаем по Name
 	// если что-то другое - SearchServer ругается ошибкой.
 	orderField := r.URL.Query().Get("order_field")
-	orderField, err := checkOrderField(orderField)
-	if err != nil {
+	switch orderField {
+	case "Id", "Name", "Age":
+	case "":
+		orderField = "Name"
+	default:
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(SearchErrorResponse{
+			Error: ErrorBadOrderField,
+		})
 		return
 	}
 
 	// Параметр order_by задает направление сортировки (по полю переданному в order_field)
-	// или ее отсутствие (OrderByAsIs = -1)
-	// orderAsc  = 0
-	// orderDesc = 1
+	// или ее отсутствие (OrderByAsIs = 0 	OrderByAsc  = 1	OrderByDesc = -1)
 	orderBy, err := strconv.Atoi(r.URL.Query().Get("order_by"))
 	if err != nil {
-		orderBy = -1
+		orderBy = 0
+	} else if orderBy < OrderByDesc {
+		orderBy = OrderByDesc
+	} else if orderBy > OrderByAsc {
+		orderBy = OrderByAsc
 	}
 
 	query := r.URL.Query().Get("query")
 
-	// Данные для работы лежит в файле dataset.xml
-	xmlData, err := os.ReadFile(DataFile)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Parser
-	userStorage, err := parseXMLData(xmlData)
+	// load&parse : Данные для работы лежит в файле dataset.xml
+	userStorage, err := loadDataset(DataFile)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -71,9 +86,16 @@ func SearchServer(w http.ResponseWriter, r *http.Request) {
 	// Filter
 	filteredUsers := filterUsers(userStorage, query)
 
-	// Sort
-	if orderBy != -1 {
-		sortUsers(filteredUsers, orderField, orderBy)
+	// Sort		orderAsc  = 1	orderDesc = -1
+	if orderBy != 0 {
+		err := sortUsers(filteredUsers, orderField, orderBy)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(SearchErrorResponse{
+				Error: fmt.Sprintf("unexpected sortUsers error %+v", err),
+			})
+			return
+		}
 	}
 
 	// Pagination
@@ -87,31 +109,25 @@ func SearchServer(w http.ResponseWriter, r *http.Request) {
 		end = total
 	}
 	outputUsers := filteredUsers[start:end]
-	nextPage := end < total
+	// nextPage := end < total
 
 	// Write responce
-	json.NewEncoder(w).Encode(SearchResponse{
-		Users:    outputUsers, // []User
-		NextPage: nextPage,    // bool
-	})
+	json.NewEncoder(w).Encode(outputUsers)
 }
 
-func checkOrderField(orderField string) (correctOrderField string, err error) {
-	// Параметр order_field работает по полям Id, Age, Name
-	// если пустой - то возвращаем по Name
-	// если что-то другое - SearchServer ругается ошибкой
-	switch orderField {
-	case "Id":
-		return orderField, nil
-	case "Age":
-		return orderField, nil
-	case "Name":
-		return orderField, nil
-	case "":
-		return "Name", nil
-	default:
-		return "", fmt.Errorf("order_field: если что-то другое (%s) - SearchServer ругается ошибкой", orderField)
+func loadDataset(xmlPath string) ([]User, error) {
+
+	// Данные для работы в файле dataset.xml
+	xmlData, err := os.ReadFile(xmlPath)
+	if err != nil {
+		return []User{}, fmt.Errorf("getUser(): dataset.xml read error %w", err)
 	}
+
+	users, err := parseXMLData(xmlData)
+	if err != nil {
+		return []User{}, fmt.Errorf("getUser(): dataset.xml parse error %w", err)
+	}
+	return users, nil
 }
 
 // Name - это first_name + last_name из xml.
@@ -191,8 +207,7 @@ func filterUsers(users []User, query string) []User {
 	lowerQuery := strings.ToLower(query)
 	for _, u := range users {
 		if strings.Contains(strings.ToLower(u.Name), lowerQuery) ||
-			strings.Contains(strings.ToLower(u.About), lowerQuery) ||
-			strings.Contains(strings.ToLower(u.Gender), lowerQuery) {
+			strings.Contains(strings.ToLower(u.About), lowerQuery) {
 			filtered = append(filtered, u)
 		}
 	}
@@ -200,7 +215,7 @@ func filterUsers(users []User, query string) []User {
 }
 
 func sortUsers(users []User, orderField string, orderBy int) error {
-	// Проверка допустимости поля
+	// check valid orderField
 	switch orderField {
 	case "Id", "Name", "Age":
 	default:
