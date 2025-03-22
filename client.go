@@ -21,7 +21,7 @@ const (
 //nolint:unused,varcheck
 var (
 	errTest = errors.New("testing")
-	client  = &http.Client{Timeout: time.Second}
+	client  = &http.Client{Timeout: time.Second * 6000}
 )
 
 type User struct {
@@ -68,8 +68,9 @@ type SearchClient struct {
 // FindUsers отправляет запрос во внешнюю систему, которая непосредственно ищет пользователей
 func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 
-	searcherParams := url.Values{}
+	searcherParams := url.Values{} // create new map[string][]string
 
+	// check input
 	if req.Limit < 0 {
 		return nil, fmt.Errorf("limit must be > 0")
 	}
@@ -89,9 +90,11 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 	searcherParams.Add("order_field", req.OrderField)
 	searcherParams.Add("order_by", strconv.Itoa(req.OrderBy))
 
+	// create request
 	searcherReq, _ := http.NewRequest("GET", srv.URL+"?"+searcherParams.Encode(), nil) //nolint:errcheck
 	searcherReq.Header.Add("AccessToken", srv.AccessToken)
 
+	// execute request
 	resp, err := client.Do(searcherReq)
 	if err != nil {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
@@ -100,6 +103,8 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 		return nil, fmt.Errorf("unknown error %s", err)
 	}
 	defer resp.Body.Close()
+
+	// read&parse response
 	body, _ := io.ReadAll(resp.Body) //nolint:errcheck
 
 	switch resp.StatusCode {
@@ -119,6 +124,7 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 		return nil, fmt.Errorf("unknown bad request error: %s", errResp.Error)
 	}
 
+	// process body responce (unmarshall users)
 	data := []User{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
